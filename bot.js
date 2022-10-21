@@ -1,38 +1,30 @@
-const puppeteer = require ("puppeteer");
+const puppeteer = require('puppeteer');
+(async () => {
+  const browser = await puppeteer.launch({headless: false});
+  const page = await browser.newPage();
+  const timeout = 5000;
+  page.setDefaultTimeout(timeout);
 
+  try {
+    await page.goto("https://flyo-drone.web.app/login");
+    await page.waitForSelector('input[name="email"]', {timeout, visible: true});
 
-const product_url = "https://flyo-drone.web.app/products/618be3016f112af512f090b4"
+    await page.type('input[name="email"]', 'nahar@kamrun.com');
+    await page.type('input[type="password"]', '123456');
 
-async function givePage(){
-    const browser = await puppeteer.launch({headless: false});
-    const page = await browser.newPage();
-    return page;
-}
+    await Promise.all([
+      page.click('button[type="submit"]'),
+      page.waitForNavigation()
+    ])
 
-
-async function login(page){
-    await page.goto(product_url);
-    await page.waitForSelector("input[name='email']");
-    await page.type("input[name='email']","nahar@kamrun.com");
-    await page.type("input[name='password']","123456");
-    await page.click("button[type='submit']", element => element.click());
-
-}
-
-
-async function addToCart(page){
-    await page.waitForSelector("input[name='address']");
-    await page.type("input[name='address']","Uttara, Dhaka");
-    await page.type("input[name='contact']","123456");
-    await page.click("input[type='submit']", element => element.click());
-
-}
-
-
-async function checkout(){
-   var page = await givePage();
-   await login(page);
-   await addToCart(page);
-}
-
-checkout();
+    const url = await page.url();
+    if (url !== `https://flyo-drone.web.app/`) {
+      throw new Error(`The URL was not https://flyo-drone.web.app/`);
+    }
+    console.log("Successfully logged in");
+  } catch (err) {
+    console.log(err);
+  } finally {
+    await browser.close();
+  }
+})();
